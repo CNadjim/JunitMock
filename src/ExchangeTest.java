@@ -18,14 +18,15 @@ public class ExchangeTest extends TestCase {
 	private Product productMock;
 	private DbConnect dbconnectMock;
 	private GmailSender gmailSenderMock;
+	private Date from;
+	private Date to;
 	
 	protected void setUp() throws Exception {
 		super.setUp();
 		userMock = mock(User.class);
 		productMock = mock(Product.class);
-		Date from = new Date(new Date().getTime() + 1000 * 60 * 60 * 24); // initialise la date de départ au jour suivant
-		Date to = new Date(from.getTime() + 1000 * 60 * 60 * 24); // 1 jour après la date from
-
+		from = new Date(new Date().getTime() + 1000 * 60 * 60 * 24); // initialise la date de départ au jour suivant
+		to = new Date(from.getTime() + 1000 * 60 * 60 * 24); // 1 jour après la date from
 		dbconnectMock = mock(DbConnect.class);
 		gmailSenderMock = mock(GmailSender.class);
 		
@@ -45,10 +46,61 @@ public class ExchangeTest extends TestCase {
 		when(productMock.isValid()).thenReturn(true);
 		when(userMock.isValid()).thenReturn(true);
 		when(dbconnectMock.saveUser(exchange.getReceiver())).thenReturn(true);
+		when(dbconnectMock.saveUser(exchange.getProduct().getOwner())).thenReturn(true);
 		when(dbconnectMock.saveProduct(productMock)).thenReturn(true);
 		when(dbconnectMock.saveExchange(exchange)).thenReturn(true);
-		when(gmailSenderMock.sendMessage("", "", "")).thenReturn(true);
+		when(gmailSenderMock.sendMessage(exchange.getReceiver().getEmail(), "alert", "VOUS ETES MINEUR")).thenReturn(true);
 		assertTrue(this.exchange.save());
 	}
+	
+	@Test
+	public void testSaveNotValidDateNotValid() {
+		when(productMock.isValid()).thenReturn(true);
+		when(userMock.isValid()).thenReturn(true);
+		exchange.setDateFrom(new Date());
+		exchange.setDateTo(new Date());
+		assertFalse(this.exchange.save());	
+	}
+	
+
+	@Test
+	public void testSaveNotValidProductNotValid() {
+		when(productMock.isValid()).thenReturn(false);
+		when(userMock.isValid()).thenReturn(true);
+		assertFalse(this.exchange.save());
+	}
+	
+	@Test
+	public void testSaveNotValidReceiverNotValid() {
+		when(productMock.isValid()).thenReturn(true);
+		when(userMock.isValid()).thenReturn(false);
+		assertFalse(this.exchange.save());
+	}
+	
+	@Test
+	public void testSaveNotValidDbConnectNotValid() {
+		when(productMock.isValid()).thenReturn(true);
+		when(userMock.isValid()).thenReturn(true);
+		when(dbconnectMock.saveUser(exchange.getReceiver())).thenReturn(false);
+		when(dbconnectMock.saveUser(exchange.getProduct().getOwner())).thenReturn(false);
+		when(dbconnectMock.saveProduct(productMock)).thenReturn(false);
+		when(dbconnectMock.saveExchange(exchange)).thenReturn(false);
+		when(gmailSenderMock.sendMessage(exchange.getReceiver().getEmail(), "alert", "VOUS ETES MINEUR")).thenReturn(true);
+		assertFalse(this.exchange.save());
+		
+	}
+	
+	@Test
+	public void testSaveNotValidGmailSenderNotValid() {
+		when(productMock.isValid()).thenReturn(true);
+		when(userMock.isValid()).thenReturn(true);
+		when(dbconnectMock.saveUser(exchange.getReceiver())).thenReturn(true);
+		when(dbconnectMock.saveUser(exchange.getProduct().getOwner())).thenReturn(true);
+		when(dbconnectMock.saveProduct(productMock)).thenReturn(true);
+		when(dbconnectMock.saveExchange(exchange)).thenReturn(true);
+		when(gmailSenderMock.sendMessage(exchange.getReceiver().getEmail(), "alert", "VOUS ETES MINEUR")).thenReturn(false);
+		assertFalse(this.exchange.save());
+	}
+	
 
 }

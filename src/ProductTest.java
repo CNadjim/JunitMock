@@ -24,12 +24,11 @@ public class ProductTest extends TestCase {
 		when(userMock.isValid()).thenReturn(true);
 		assertTrue(this.product.isValid());
 	}
-	
-	/*
+
 	public void testNomProduct() {
 		this.product.setNom(null);
 		assertFalse(this.product.isValid());
 	}
-	*/
+	
 
 }

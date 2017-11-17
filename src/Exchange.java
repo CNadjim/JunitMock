@@ -33,13 +33,11 @@ public class Exchange {
 		if (receiver.isValid() && product.isValid() && this.dateIsValid()) {
 			
 			if (!receiver.isMajeur()) {
-				gmailSender.sendMessage("c.nadjim@gmail.com", "alert", "VOUS ETES MINEUR");
+				if( ! gmailSender.sendMessage(receiver.getEmail(), "alert", "VOUS ETES MINEUR")) return false;
+				
 			}
-			
-			dbconnect.saveUser(this.receiver);
-			dbconnect.saveUser(this.product.getOwner());
-			dbconnect.saveProduct(this.product);
-			dbconnect.saveExchange(this);
+			if (!(dbconnect.saveUser(this.receiver) && dbconnect.saveUser(this.product.getOwner()) && dbconnect.saveProduct(this.product) &&dbconnect.saveExchange(this))) return false;
+		
 			return true;
 		}
 		return false;

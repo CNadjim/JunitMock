@@ -46,6 +46,7 @@ public class GmailSender {
 	            return true;
 	            
 	    	}catch(MessagingException e) {
+            System.out.println("GmailSender : Echec de l'envoi");
 	    		e.printStackTrace();
 	    		return false;
 	    		
